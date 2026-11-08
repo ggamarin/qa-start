@@ -1,0 +1,1020 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cellipse cx='20' cy='23' rx='10' ry='12' fill='%23FF5C6C' stroke='%2317153A' stroke-width='2.5'/%3E%3Ccircle cx='20' cy='11' r='5' fill='%2317153A'/%3E%3C/svg%3E">
+<title>Добро пожаловать в QA</title>
+<meta name="description" content="Лендинг для начинающих тестировщиков: игра «Найди баг», роадмап от теории до автотестов, пирамида тестов, пример баг-репорта и словарь QA.">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preload" href="fonts/unbounded.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/nunito.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* Шрифты лежат рядом с сайтом (fonts/), без обращений к Google. Лицензия SIL OFL 1.1, см. fonts/OFL-*.txt */
+@font-face{font-family:"Unbounded";src:url("fonts/unbounded.woff2") format("woff2");font-weight:500 900;font-style:normal;font-display:swap}
+@font-face{font-family:"Nunito";src:url("fonts/nunito.woff2") format("woff2");font-weight:400 800;font-style:normal;font-display:swap}
+@font-face{font-family:"JetBrains Mono";src:url("fonts/jetbrains-mono.woff2") format("woff2");font-weight:400 600;font-style:normal;font-display:swap}
+</style>
+<style>
+/* Layout: «доска баг-трекера» — толстые контуры, смещённые тени, карточки-тикеты; одна игра «Найди баг» в центре страницы */
+:root{
+  --bg:#F1F4FF; --surface:#FFFFFF; --ink:#17153A; --muted:#57547E; --line:#17153A; --shadow:#17153A;
+  --sun:#FFCF3F; --coral:#FF5C6C; --mint:#1FC7A3; --sky:#5B82FF; --on-accent:#17153A;
+  --mint-ink:#0B7F66; --coral-ink:#C41E33;
+  --soft:#E3E8FF;
+  --f-display:"Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body:"Nunito", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121131; --surface:#1D1B47; --ink:#F2F0FF; --muted:#B4B0DD; --line:#ECEAFF; --shadow:#05041A;
+    --sun:#FFD54F; --coral:#FF6F7D; --mint:#2FD8B3; --sky:#7C9BFF; --on-accent:#17153A; --soft:#2A2760;
+    --mint-ink:#2FD8B3; --coral-ink:#FF8A95;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121131; --surface:#1D1B47; --ink:#F2F0FF; --muted:#B4B0DD; --line:#ECEAFF; --shadow:#05041A;
+  --sun:#FFD54F; --coral:#FF6F7D; --mint:#2FD8B3; --sky:#7C9BFF; --on-accent:#17153A; --soft:#2A2760;
+  --mint-ink:#2FD8B3; --coral-ink:#FF8A95;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--f-body); font-size:17px; line-height:1.6;
+  background-image:radial-gradient(var(--soft) 1.5px, transparent 1.5px);
+  background-size:22px 22px;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h2{font-size:clamp(1.6rem, 3.6vw, 2.4rem);font-weight:700}
+h3{font-size:1.1rem;font-weight:700}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--sky);outline-offset:3px;border-radius:6px}
+.mono{font-family:var(--f-mono)}
+.eyebrow{font-family:var(--f-mono);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* Header */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:3px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:12px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:900;font-size:1.05rem;text-decoration:none}
+.logo svg{width:34px;height:34px;flex:none}
+nav{display:flex;gap:6px;flex-wrap:nowrap;min-width:0;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav a{font-weight:800;text-decoration:none;font-size:.92rem;padding:6px 12px;border-radius:999px;border:2px solid transparent}
+nav a:hover{border-color:var(--line);background:var(--sun);color:var(--on-accent)}
+nav a{white-space:nowrap;flex:none}
+.head-right{display:flex;align-items:center;gap:12px;min-width:0}
+.lang{display:flex;flex:none;border:2px solid var(--line);border-radius:999px;overflow:hidden;background:var(--bg)}
+.lang button{font:700 .78rem/1 var(--f-mono);letter-spacing:.04em;padding:7px 10px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.lang button + button{border-left:2px solid var(--line)}
+.lang button[aria-pressed="true"]{background:var(--sun);color:var(--on-accent)}
+.lang button:hover:not([aria-pressed="true"]){background:var(--soft)}
+.logo{white-space:nowrap;flex:none}
+@media (max-width:1040px){nav{gap:2px}nav a{padding:6px 8px;font-size:.84rem}.logo{font-size:.95rem}.head-right{gap:8px}}
+@media (max-width:900px){nav a{padding:6px 5px;font-size:.78rem}}
+@media (max-width:820px){nav{display:none}}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-body);font-weight:800;font-size:1rem;
+  padding:12px 20px;border:3px solid var(--line);border-radius:12px;text-decoration:none;cursor:pointer;
+  background:var(--sun);color:var(--on-accent);box-shadow:4px 4px 0 var(--shadow);transition:transform .12s, box-shadow .12s}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--shadow)}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--shadow)}
+.btn.ghost{background:var(--surface);color:var(--ink)}
+
+.card{background:var(--surface);border:3px solid var(--line);border-radius:var(--r);box-shadow:6px 6px 0 var(--shadow)}
+
+section{padding-block:72px}
+.sec-head{display:grid;gap:10px;max-width:720px;margin-bottom:36px}
+.sec-head p{color:var(--muted);font-size:1.08rem}
+
+/* Hero */
+.hero{padding-block:64px 56px}
+.hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center}
+.hero h1{font-size:clamp(2.3rem, 6.4vw, 4.6rem);font-weight:900;letter-spacing:-.01em}
+.hero h1 .qa{display:inline-block;background:var(--coral);color:var(--on-accent);padding:0 .22em;border:4px solid var(--line);border-radius:16px;box-shadow:6px 6px 0 var(--shadow);transform:rotate(-3deg)}
+.hero .lead{font-size:1.2rem;color:var(--muted);max-width:34em;margin-top:22px}
+.hero .ctas{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px}
+.hero-text{min-width:0}
+
+.ticket{position:relative;padding:22px 22px 20px;transform:rotate(2deg);min-width:0}
+.ticket-top{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:2px dashed var(--line);padding-bottom:12px;margin-bottom:14px}
+.ticket-id{font-family:var(--f-mono);font-weight:600;font-size:.9rem}
+.ticket dl{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin:0;font-size:.95rem}
+.ticket dt{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-top:3px}
+.ticket dd{margin:0;font-weight:600;min-width:0}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:.76rem;font-weight:600;padding:2px 9px;border:2px solid var(--line);border-radius:999px;color:var(--on-accent);background:var(--sun)}
+.chip.coral{background:var(--coral)} .chip.mint{background:var(--mint)} .chip.sky{background:var(--sky)}
+.stamp{position:absolute;right:-12px;bottom:-22px;font-family:var(--f-display);font-weight:900;font-size:1.15rem;color:var(--mint-ink);
+  border:4px solid var(--mint-ink);border-radius:10px;padding:3px 12px;background:var(--surface);transform:rotate(-12deg);animation:stamp .5s .6s cubic-bezier(.3,1.6,.6,1) both}
+@keyframes stamp{from{transform:rotate(-12deg) scale(1.7)}to{transform:rotate(-12deg) scale(1)}}
+
+/* What is QA */
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.trio .card{padding:24px;display:grid;gap:10px;align-content:start}
+.trio .tag{width:max-content}
+.trio p{color:var(--muted)}
+.nested{margin-top:26px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-weight:800}
+.nested span{padding:8px 16px;border:3px solid var(--line);border-radius:999px;color:var(--on-accent)}
+
+/* Game */
+.game{display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:start}
+.browser{overflow:hidden;min-width:0}
+.browser-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:3px solid var(--line);background:var(--soft)}
+.dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--line)}
+.url{flex:1;min-width:0;font-family:var(--f-mono);font-size:.8rem;background:var(--surface);border:2px solid var(--line);border-radius:8px;padding:3px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mock{padding:26px;display:grid;gap:14px;cursor:crosshair}
+.mock h3{font-size:1.25rem}
+.mk{font:inherit;color:inherit;background:none;border:2px solid transparent;border-radius:8px;padding:2px 4px;margin:-2px -4px;text-align:left;cursor:crosshair;position:relative}
+.mk:hover{border-color:var(--sky);border-style:dashed}
+.field{display:grid;gap:4px}
+.field .lbl{font-weight:800;font-size:.92rem;justify-self:start}
+.field .inp{display:block;width:100%;margin:0;padding:10px 12px;border:2px solid var(--muted);border-radius:10px;background:var(--bg);font-family:var(--f-mono);font-size:.92rem}
+.field .inp:hover{border-color:var(--sky)}
+.hint{font-size:.8rem;color:var(--muted);justify-self:start}
+.req{color:var(--coral-ink)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.check{display:flex;gap:8px;align-items:center;font-size:.92rem;justify-self:start}
+.check i{width:18px;height:18px;border:2px solid var(--line);border-radius:5px;display:inline-block;flex:none}
+.submit{display:block;width:100%;margin:6px 0 0;padding:13px;border:3px solid var(--line);border-radius:12px;background:var(--sky);color:var(--on-accent);font-weight:800;text-align:center;box-shadow:3px 3px 0 var(--shadow)}
+.mk.found{border:2px solid var(--coral);border-style:solid;background:color-mix(in srgb, var(--coral) 16%, transparent)}
+.mk.found::after{content:attr(data-n);position:absolute;top:-12px;right:-12px;width:24px;height:24px;border-radius:50%;background:var(--coral);color:var(--on-accent);border:2px solid var(--line);font:700 .75rem/20px var(--f-mono);text-align:center}
+.mk.miss{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+.score{padding:22px;display:grid;gap:16px;min-width:0}
+.score-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.counter{font-family:var(--f-display);font-weight:900;font-size:2.2rem;font-variant-numeric:tabular-nums}
+.counter small{font-size:1rem;color:var(--muted)}
+.bar{height:14px;border:3px solid var(--line);border-radius:999px;overflow:hidden;background:var(--bg)}
+.bar i{display:block;height:100%;width:0;background:var(--coral);transition:width .3s}
+.found-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.found-list li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;font-size:.95rem;color:var(--muted)}
+.found-list li b{font-family:var(--f-mono);width:28px;height:28px;border-radius:50%;border:2px dashed var(--muted);display:grid;place-items:center;font-size:.8rem}
+.found-list li.ok{color:var(--ink)}
+.found-list li.ok b{border:2px solid var(--line);background:var(--coral);color:var(--on-accent)}
+.found-list li.ok span strong{display:block}
+.win{padding:12px 14px;border:3px solid var(--line);border-radius:12px;background:var(--mint);color:var(--on-accent);font-weight:800}
+.score .meta{font-size:.88rem;color:var(--muted);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.linkbtn{font:inherit;font-weight:800;background:none;border:none;color:var(--ink);text-decoration:underline;cursor:pointer;padding:0}
+
+/* Roadmap */
+.road{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:22px;counter-reset:step}
+.road li{padding:24px;display:grid;gap:10px;align-content:start;position:relative}
+.road li::before{counter-increment:step;content:counter(step);font-family:var(--f-display);font-weight:900;font-size:1.3rem;width:46px;height:46px;display:grid;place-items:center;border:3px solid var(--line);border-radius:12px;background:var(--c, var(--sun));color:var(--on-accent);box-shadow:3px 3px 0 var(--shadow)}
+.road p{color:var(--muted);font-size:.98rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font-family:var(--f-mono);font-size:.76rem;padding:2px 9px;border:2px solid var(--line);border-radius:999px;background:var(--bg)}
+.chips .tool{font-family:var(--f-mono);font-size:.76rem;font-weight:600;line-height:1.6;padding:2px 9px;border:2px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:transform .12s, background .12s, box-shadow .12s}
+.chips .tool::after{content:"+";opacity:.6}
+.chips .tool:hover{background:var(--soft);transform:translateY(-2px);box-shadow:2px 2px 0 var(--shadow)}
+.chips .tool[aria-expanded="true"]{background:var(--c, var(--sun));color:var(--on-accent);box-shadow:2px 2px 0 var(--shadow)}
+.chips .tool[aria-expanded="true"]::after{content:"−";opacity:1}
+.tool-info{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease;visibility:hidden}
+.tool-info.open{grid-template-rows:1fr;visibility:visible}
+.tool-info > .clip{overflow:hidden;min-height:0}
+.tool-info .in{margin-top:6px;border:2px solid var(--line);border-left:8px solid var(--c, var(--sun));border-radius:10px;background:var(--bg);padding:12px 14px;display:grid;gap:6px}
+.tool-info .in-head{display:flex;justify-content:space-between;align-items:start;gap:10px}
+.tool-info .in-head b{font-family:var(--f-mono);font-size:.9rem}
+.tool-info .in p{color:var(--ink);font-size:.93rem;line-height:1.55}
+.tool-info .x{flex:none;width:26px;height:26px;border:2px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:700 .9rem/1 var(--f-mono);cursor:pointer}
+.tool-info .x:hover{background:var(--coral);color:var(--on-accent)}
+
+/* Pyramid + bug report */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.pyr{padding:26px;display:grid;gap:18px;min-width:0}
+.pyramid{display:grid;gap:6px;justify-items:center}
+.tier{display:grid;place-items:center;text-align:center;color:var(--on-accent);font-weight:800;border:3px solid var(--line);padding:12px 8px;border-radius:10px;line-height:1.25}
+.tier small{display:block;font-family:var(--f-mono);font-weight:400;font-size:.74rem}
+.t1{width:44%;background:var(--coral)} .t2{width:70%;background:var(--sky)} .t3{width:96%;background:var(--mint)}
+.pyr-note{font-size:.95rem;color:var(--muted)}
+.pyr-legend{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.76rem;color:var(--muted);gap:10px}
+
+.report{padding:0;overflow:hidden;min-width:0}
+.report-head{padding:16px 22px;background:var(--coral);color:var(--on-accent);border-bottom:3px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.report-head h3{font-size:1rem}
+.report dl{margin:0;padding:8px 22px 20px}
+.report .r{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:10px 0;border-bottom:2px dashed var(--soft)}
+.report .r:last-child{border-bottom:0}
+.report dt{font-family:var(--f-mono);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding-top:3px}
+.report dd{margin:0;font-size:.95rem;min-width:0}
+.report ol{margin:0;padding-left:1.2em}
+@media (max-width:520px){.report .r{grid-template-columns:1fr;gap:2px}}
+
+/* Glossary */
+.gloss{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.gloss details{background:var(--surface);border:3px solid var(--line);border-radius:12px;box-shadow:4px 4px 0 var(--shadow);padding:14px 16px}
+.gloss summary{cursor:pointer;font-family:var(--f-display);font-weight:700;font-size:.98rem;list-style:none;display:flex;justify-content:space-between;gap:8px}
+.gloss summary::-webkit-details-marker{display:none}
+.gloss summary::after{content:"+";font-family:var(--f-mono);font-weight:600}
+.gloss details[open]{background:var(--sun);color:var(--on-accent)}
+.gloss details[open] summary::after{content:"−"}
+.gloss details p{margin-top:8px;font-size:.92rem}
+
+/* Checklist */
+.start{padding:32px;display:grid;grid-template-columns:.9fr 1.1fr;gap:32px;align-items:center;background:var(--sun);color:var(--on-accent)}
+.start h2{font-size:clamp(1.5rem,3.2vw,2.1rem)}
+.start p{margin-top:12px}
+.tasks{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.tasks label{display:flex;gap:12px;align-items:flex-start;background:#FFFFFF;color:#17153A;border:3px solid #17153A;border-radius:12px;padding:12px 14px;cursor:pointer;font-weight:600}
+.tasks input{width:20px;height:20px;margin:2px 0 0;accent-color:#FF5C6C;flex:none}
+.tasks input:checked + span{text-decoration:line-through;opacity:.6}
+.progress{margin-top:16px;font-family:var(--f-mono);font-weight:600}
+
+main{overflow-x:clip}
+/* About */
+.about{display:grid;grid-template-columns:.95fr 1.05fr;gap:28px;align-items:start}
+.profile{padding:26px;display:grid;gap:18px;min-width:0}
+.who{display:flex;gap:18px;align-items:center}
+.avatar{width:76px;height:76px;flex:none;border:3px solid var(--line);border-radius:18px;background:var(--sun);color:var(--on-accent);display:grid;place-items:center;font:900 1.5rem/1 var(--f-display);box-shadow:4px 4px 0 var(--shadow);transform:rotate(-4deg)}
+.who h3{font-size:1.4rem}
+.who p{font-family:var(--f-mono);font-size:.82rem;color:var(--muted);margin-top:4px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.facts div{border:2px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);min-width:0}
+.facts b{display:block;font:900 1.15rem/1.3 var(--f-display)}
+.facts span{font-size:.8rem;color:var(--muted)}
+.profile .summary{font-size:1rem}
+.jobs{list-style:none;margin:0;padding:26px;display:grid;min-width:0}
+.job{display:grid;grid-template-columns:16px 1fr;gap:16px;position:relative;padding-bottom:22px}
+.job:last-child{padding-bottom:0}
+.job::before{content:"";width:16px;height:16px;box-sizing:border-box;border:3px solid var(--line);border-radius:50%;background:var(--c, var(--sun));margin-top:5px}
+.job::after{content:"";position:absolute;left:6.5px;top:25px;bottom:2px;width:3px;border-radius:2px;background:var(--soft)}
+.job:last-child::after{display:none}
+.job > div{display:grid;gap:4px;min-width:0}
+.job h4{font-family:var(--f-display);font-size:1rem;margin:0;line-height:1.3}
+.job .when{font-family:var(--f-mono);font-size:.78rem;color:var(--muted)}
+.job p{font-size:.94rem;color:var(--muted)}
+.job.pre::before{background:var(--bg);border-style:dashed}
+.contacts{margin-top:28px;padding:24px 26px;background:var(--coral);color:var(--on-accent);display:grid;grid-template-columns:auto 1fr;gap:18px 28px;align-items:center}
+.contacts h3{font-size:1.35rem}
+.contacts > div > p{margin-top:6px;font-weight:600}
+.c-list{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end}
+.c-item{display:flex;align-items:center;gap:12px;background:#FFFFFF;color:#17153A;border:3px solid #17153A;border-radius:12px;padding:8px 8px 8px 14px;box-shadow:3px 3px 0 #17153A;min-width:0}
+.c-item .txt{display:grid;min-width:0}
+.c-item .lab{font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;opacity:.65}
+.c-item .val{font-weight:800;overflow-wrap:anywhere}
+.c-btn{flex:none;font:700 .82rem/1 var(--f-body);padding:9px 12px;border:2px solid #17153A;border-radius:9px;background:#FFCF3F;color:#17153A;text-decoration:none;cursor:pointer}
+.c-btn:hover{background:#1FC7A3}
+@media (max-width:900px){.about,.contacts{grid-template-columns:1fr}.c-list{justify-content:flex-start}}
+@media (max-width:600px){.facts{grid-template-columns:1fr 1fr 1fr}.c-list{flex-direction:column}.c-item{justify-content:space-between}.profile,.jobs{padding:20px}}
+@media (max-width:420px){.facts{grid-template-columns:1fr}}
+
+footer{padding-block:36px 48px;color:var(--muted);font-size:.92rem}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:3px solid var(--line);padding-top:22px}
+
+@media (max-width:900px){
+  .hero .wrap,.game,.two,.start{grid-template-columns:1fr}
+  .trio,.road{grid-template-columns:1fr 1fr}
+  .gloss{grid-template-columns:1fr 1fr}
+  .ticket{max-width:460px;transform:rotate(1.5deg)}
+}
+@media (max-width:600px){
+  section{padding-block:52px}
+  .trio,.road,.gloss,.row2{grid-template-columns:1fr}
+  .mock{padding:18px}
+  .start{padding:22px}
+  .stamp{right:6px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="На главную" data-i18n-aria="a.home">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <g stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none">
+          <path d="M11 16 5 13M11 22H4M11 28l-6 4M29 16l6-3M29 22h7M29 28l6 4M16 9l-3-5M24 9l3-5"/>
+        </g>
+        <ellipse cx="20" cy="23" rx="10" ry="12" fill="var(--coral)" stroke="currentColor" stroke-width="2.5"/>
+        <circle cx="20" cy="11" r="5" fill="var(--ink)"/>
+        <path d="M20 12v23" stroke="currentColor" stroke-width="2.5"/>
+        <circle cx="15" cy="21" r="2" fill="currentColor"/><circle cx="25" cy="27" r="2" fill="currentColor"/>
+      </svg>
+      <span data-i18n="logo">QA/старт</span>
+    </a>
+    <div class="head-right">
+      <nav aria-label="Разделы" data-i18n-aria="a.nav">
+        <a href="#what" data-i18n="nav.what">Что такое QA</a>
+        <a href="#game" data-i18n="nav.game">Найди баг</a>
+        <a href="#road" data-i18n="nav.road">Роадмап</a>
+        <a href="#report" data-i18n="nav.report">Баг-репорт</a>
+        <a href="#gloss" data-i18n="nav.gloss">Словарь</a>
+        <a href="#about" data-i18n="nav.about">Обо мне</a>
+      </nav>
+      <div class="lang" role="group" aria-label="Язык / Language">
+        <button type="button" data-lang="ru" aria-pressed="true" lang="ru">RU</button>
+        <button type="button" data-lang="en" aria-pressed="false" lang="en">EN</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-text">
+        <p class="eyebrow" data-i18n="hero.eyebrow">Старт в профессии тестировщика</p>
+        <h1 style="margin-top:14px" data-i18n="hero.h1">Добро пожаловать в <span class="qa">QA</span></h1>
+        <p class="lead" data-i18n="hero.lead">Здесь учатся ломать программы, чтобы ими было приятно пользоваться. Начните с короткой игры, потом пройдите по роадмапу от теории до автотестов.</p>
+        <div class="ctas">
+          <a class="btn" href="#game" data-i18n="hero.cta1">Найти первый баг</a>
+          <a class="btn ghost" href="#road" data-i18n="hero.cta2">Смотреть роадмап</a>
+        </div>
+      </div>
+
+      <article class="card ticket" aria-label="Пример тикета" data-i18n-aria="a.ticket">
+        <div class="ticket-top">
+          <span class="ticket-id">BUG-0001</span>
+          <span class="chip coral">Major</span>
+        </div>
+        <dl>
+          <dt data-i18n="t.title">Заголовок</dt><dd data-i18n="tk.title">Новичок не знает, с чего начать в QA</dd>
+          <dt data-i18n="t.steps">Шаги</dt><dd data-i18n="tk.steps">Открыть 40 вкладок с курсами, закрыть все</dd>
+          <dt data-i18n="tk.exp">Ожидание</dt><dd data-i18n="tk.expv">Понятный план на первые недели</dd>
+          <dt>Priority</dt><dd><span class="chip">High</span></dd>
+          <dt data-i18n="tk.fix">Фикс</dt><dd data-i18n="tk.fixv">Этот сайт</dd>
+        </dl>
+        <span class="stamp" aria-hidden="true">FIXED</span>
+      </article>
+    </div>
+  </section>
+
+  <section id="what">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow" data-i18n="what.eyebrow">Основы</p>
+        <h2 data-i18n="what.h2">QA, QC и тестирование — это разные вещи</h2>
+        <p data-i18n="what.p">Их часто путают даже на собеседованиях. Если коротко: тестирование ищет дефекты, контроль качества проверяет продукт, а обеспечение качества строит процесс, в котором дефектов меньше.</p>
+      </div>
+      <div class="trio">
+        <div class="card">
+          <span class="chip mint tag">Testing</span>
+          <h3 data-i18n="what.h1">Тестирование</h3>
+          <p data-i18n="what.p1">Запускаем продукт и сравниваем фактическое поведение с ожидаемым. Пишем чек-листы, тест-кейсы и баг-репорты.</p>
+        </div>
+        <div class="card">
+          <span class="chip sky tag">QC · Quality Control</span>
+          <h3 data-i18n="what.h2b">Контроль качества</h3>
+          <p data-i18n="what.p2">Решаем, готов ли релиз: собираем результаты тестов, метрики, открытые дефекты и даём «добро» или «стоп».</p>
+        </div>
+        <div class="card">
+          <span class="chip coral tag">QA · Quality Assurance</span>
+          <h3 data-i18n="what.h3">Обеспечение качества</h3>
+          <p data-i18n="what.p3">Работаем с процессом: ревью требований, договорённости в команде, автотесты в CI. Цель — чтобы баги не появлялись.</p>
+        </div>
+      </div>
+      <div class="nested" aria-label="Вложенность понятий" data-i18n-aria="a.nested">
+        <span style="background:var(--coral)">QA</span> ⊃
+        <span style="background:var(--sky)">QC</span> ⊃
+        <span style="background:var(--mint)">Testing</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="game">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow" data-i18n="game.eyebrow">Практика за 2 минуты</p>
+        <h2 data-i18n="game.h2">Найди баг в форме регистрации</h2>
+        <p data-i18n="game.p">В форме спрятано 6 дефектов: опечатки, логика, безопасность. Кликайте по подозрительным местам. Промахи тоже считаются, как на реальном проекте.</p>
+      </div>
+
+      <div class="game">
+        <div class="card browser">
+          <div class="browser-bar">
+            <span class="dot" style="background:var(--coral)"></span>
+            <span class="dot" style="background:var(--sun)"></span>
+            <span class="dot" style="background:var(--mint)"></span>
+            <span class="url">https://shop.example/signup</span>
+          </div>
+          <div class="mock" id="mock">
+            <h3 data-i18n="m.h">Создать аккаунт</h3>
+
+            <div class="field">
+              <button type="button" class="mk lbl">Email <span class="req">*</span></button>
+              <button type="button" class="mk inp">anna.test@example.com</button>
+            </div>
+
+            <div class="field">
+              <button type="button" class="mk lbl" data-bug="1" data-i18n="m.pass">Пороль <span class="req">*</span></button>
+              <button type="button" class="mk inp" data-bug="2">qwerty123</button>
+              <button type="button" class="mk hint" data-i18n="m.passhint">Минимум 8 символов</button>
+            </div>
+
+            <div class="row2">
+              <div class="field">
+                <button type="button" class="mk lbl" data-i18n="m.age">Возраст</button>
+                <button type="button" class="mk inp" data-bug="3">-5</button>
+              </div>
+              <div class="field">
+                <button type="button" class="mk lbl" data-i18n="m.birth">Дата рождения</button>
+                <button type="button" class="mk inp" data-bug="4" data-i18n="m.date">31.02.2001</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <button type="button" class="mk lbl" data-i18n="m.phone">Телефон <span class="req">*</span></button>
+              <button type="button" class="mk inp">+7 900 123-45-67</button>
+              <button type="button" class="mk hint" data-bug="5" data-i18n="m.opt">Необязательное поле</button>
+            </div>
+
+            <button type="button" class="mk check" data-i18n="m.terms"><i></i> Я принимаю условия использования</button>
+            <button type="button" class="mk submit" data-bug="6" data-i18n="m.submit">Зарегестрироваться</button>
+          </div>
+        </div>
+
+        <div class="card score" aria-live="polite">
+          <div class="score-top">
+            <span class="eyebrow" data-i18n="s.found">Найдено дефектов</span>
+            <span class="counter"><span id="cnt">0</span><small> / 6</small></span>
+          </div>
+          <div class="bar"><i id="bar"></i></div>
+          <ol class="found-list" id="list"></ol>
+          <div class="win" id="win" hidden></div>
+          <div class="meta">
+            <span><span data-i18n="s.miss">Промахов:</span> <b id="miss">0</b></span>
+            <button type="button" class="linkbtn" id="reset" data-i18n="s.reset">Начать заново</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="road">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow" data-i18n="road.eyebrow">Роадмап</p>
+        <h2 data-i18n="road.h2">Шесть шагов от новичка до автоматизатора</h2>
+        <p data-i18n="road.p">Порядок важен: без теории и тест-дизайна автотесты превращаются в автоматизацию бессмысленных проверок. Нажмите на любой инструмент или методологию, чтобы узнать, что это.</p>
+      </div>
+      <ol class="road">
+        <li class="card" style="--c:var(--sun)">
+          <h3 data-i18n="r1.h">Теория тестирования</h3>
+          <p data-i18n="r1.p">Жизненный цикл ПО и дефекта, виды и уровни тестирования, 7 принципов тестирования.</p>
+          <div class="chips"><span>SDLC</span><span>STLC</span><span>ISTQB FL</span></div>
+        </li>
+        <li class="card" style="--c:var(--mint)">
+          <h3 data-i18n="r2.h">Тест-дизайн</h3>
+          <p data-i18n="r2.p">Как выбрать минимум проверок, который найдёт максимум багов.</p>
+          <div class="chips"><span>Классы эквивалентности</span><span>Граничные значения</span><span>Pairwise</span><span>Таблицы решений</span></div>
+        </li>
+        <li class="card" style="--c:var(--sky)">
+          <h3 data-i18n="r3.h">Документация</h3>
+          <p data-i18n="r3.p">Пишем так, чтобы разработчик воспроизвёл баг с первого раза.</p>
+          <div class="chips"><span>Чек-лист</span><span>Тест-кейс</span><span>Баг-репорт</span><span>Jira</span></div>
+        </li>
+        <li class="card" style="--c:var(--coral)">
+          <h3 data-i18n="r4.h">Инструменты</h3>
+          <p data-i18n="r4.p">Смотрим глубже интерфейса: запросы, ответы, данные, логи.</p>
+          <div class="chips"><span>DevTools</span><span>Postman</span><span>SQL</span><span>Git</span><span>Charles</span></div>
+        </li>
+        <li class="card" style="--c:var(--sun)">
+          <h3 data-i18n="r5.h">Автоматизация</h3>
+          <p data-i18n="r5.p">Один язык и один фреймворк. Начните с API-тестов, они стабильнее UI.</p>
+          <div class="chips"><span>Python · pytest</span><span>Java · JUnit</span><span>Playwright</span><span>Selenium</span></div>
+        </li>
+        <li class="card" style="--c:var(--mint)">
+          <h3 data-i18n="r6.h">Нагрузка и CI</h3>
+          <p data-i18n="r6.p">Проверяем, выдержит ли сервис тысячи пользователей, и запускаем тесты на каждый коммит.</p>
+          <div class="chips"><span>k6</span><span>JMeter</span><span>Locust</span><span>GitLab CI</span><span>Grafana</span></div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="report">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow" data-i18n="rep.eyebrow">Ремесло</p>
+        <h2 data-i18n="rep.h2">Пирамида тестов и анатомия баг-репорта</h2>
+        <p data-i18n="rep.p">Слева — сколько каких тестов обычно пишут. Справа — как оформить один из багов из игры выше.</p>
+      </div>
+      <div class="two">
+        <div class="card pyr">
+          <h3 data-i18n="pyr.h">Пирамида тестирования</h3>
+          <div class="pyramid">
+            <div class="tier t1" data-i18n="pyr.1">UI / E2E<small>мало · медленно · дорого</small></div>
+            <div class="tier t2" data-i18n="pyr.2">Интеграционные / API<small>средне</small></div>
+            <div class="tier t3" data-i18n="pyr.3">Unit-тесты<small>много · быстро · дёшево</small></div>
+          </div>
+          <div class="pyr-legend"><span data-i18n="pyr.up">↑ ближе к пользователю</span><span data-i18n="pyr.down">↓ ближе к коду</span></div>
+          <p class="pyr-note" data-i18n="pyr.note">Чем выше уровень, тем дольше тест выполняется и тем чаще ломается без причины. Поэтому основную массу проверок держат внизу, а UI-сценариями покрывают только ключевые пути: регистрацию, оплату, поиск.</p>
+        </div>
+
+        <article class="card report">
+          <div class="report-head">
+            <h3 class="mono">BUG-0042</h3>
+            <span class="chip" style="background:var(--surface);color:var(--ink)">Open</span>
+          </div>
+          <dl>
+            <div class="r"><dt data-i18n="t.title">Заголовок</dt><dd data-i18n="b.title"><b>Поле «Возраст» принимает отрицательные значения</b></dd></div>
+            <div class="r"><dt data-i18n="b.env">Окружение</dt><dd class="mono" style="font-size:.85rem">stage · Chrome 131 · Windows 11</dd></div>
+            <div class="r"><dt data-i18n="t.steps">Шаги</dt><dd data-i18n="b.steps"><ol><li>Открыть /signup</li><li>Ввести в «Возраст» значение −5</li><li>Заполнить остальные поля валидно</li><li>Нажать «Зарегистрироваться»</li></ol></dd></div>
+            <div class="r"><dt data-i18n="b.exp">Ожидаемый</dt><dd data-i18n="b.expv">Ошибка валидации «Возраст от 14 до 120»</dd></div>
+            <div class="r"><dt data-i18n="b.act">Фактический</dt><dd data-i18n="b.actv">Аккаунт создан, в профиле возраст −5</dd></div>
+            <div class="r"><dt>Severity</dt><dd data-i18n="b.sev"><span class="chip">Major</span> — ломает данные, но не блокирует работу</dd></div>
+            <div class="r"><dt>Priority</dt><dd data-i18n="b.pri"><span class="chip coral">High</span> — форма в продакшене, данные уже копятся</dd></div>
+            <div class="r"><dt data-i18n="b.att">Вложения</dt><dd data-i18n="b.attv">Скриншот, HAR-файл запроса POST /api/users</dd></div>
+          </dl>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="gloss">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow" data-i18n="gl.eyebrow">Словарь</p>
+        <h2 data-i18n="gl.h2">Слова, которые вы услышите в первую неделю</h2>
+        <p data-i18n="gl.p">Нажмите на карточку, чтобы открыть определение.</p>
+      </div>
+      <div class="gloss">
+        <details data-i18n="gl.1"><summary>Смоук</summary><p>Быстрая проверка, что сборка вообще живая: открывается, логинится, главная функция работает. Если смоук не прошёл, дальше не тестируют.</p></details>
+        <details data-i18n="gl.2"><summary>Регресс</summary><p>Повторная проверка старого функционала после изменений. Отвечает на вопрос «мы ничего не сломали?».</p></details>
+        <details data-i18n="gl.3"><summary>Ретест</summary><p>Проверка конкретного исправленного бага по шагам из баг-репорта.</p></details>
+        <details data-i18n="gl.4"><summary>Severity</summary><p>Насколько сильно баг влияет на систему: Blocker, Critical, Major, Minor, Trivial. Ставит тестировщик.</p></details>
+        <details data-i18n="gl.5"><summary>Priority</summary><p>Как срочно чинить. Обычно решает менеджер или тимлид, исходя из бизнеса.</p></details>
+        <details data-i18n="gl.6"><summary>Граничные значения</summary><p>Проверка на краях диапазона. Для возраста 14–120 проверяем 13, 14, 120 и 121.</p></details>
+        <details data-i18n="gl.7"><summary>Флаки-тест</summary><p>Автотест, который то проходит, то падает без изменений в коде. Чаще всего виноваты ожидания и тестовые данные.</p></details>
+        <details data-i18n="gl.8"><summary>Тестовое окружение</summary><p>Отдельный стенд (dev, stage) с копией приложения, где можно ломать без вреда для пользователей.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="card start">
+        <div>
+          <p class="eyebrow" style="color:inherit;opacity:.75" data-i18n="hw.eyebrow">Домашнее задание</p>
+          <h2 style="margin-top:8px" data-i18n="hw.h2">План на первую неделю</h2>
+          <p data-i18n="hw.p">Отмечайте пункты по мере выполнения. Прогресс сохраняется в этом браузере.</p>
+          <p class="progress" id="prog">Выполнено: 0 из 5</p>
+        </div>
+        <ul class="tasks" id="tasks">
+          <li><label><input type="checkbox" id="t1"><span data-i18n="hw.1">Прочитать о 7 принципах тестирования</span></label></li>
+          <li><label><input type="checkbox" id="t2"><span data-i18n="hw.2">Составить чек-лист для формы входа любого сайта</span></label></li>
+          <li><label><input type="checkbox" id="t3"><span data-i18n="hw.3">Открыть DevTools и найти вкладку Network</span></label></li>
+          <li><label><input type="checkbox" id="t4"><span data-i18n="hw.4">Написать баг-репорт на реальный найденный дефект</span></label></li>
+          <li><label><input type="checkbox" id="t5"><span data-i18n="hw.5">Отправить первый GET-запрос в Postman</span></label></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  <section id="about">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow" data-i18n="ab.eyebrow">Автор страницы</p>
+        <h2 data-i18n="ab.h2">Обо мне</h2>
+        <p data-i18n="ab.p">Я сам пришёл в QA из другой профессии, поэтому знаю, как сложно понять, с чего начать. Эту страницу собрал для тех, кто делает первые шаги.</p>
+      </div>
+
+      <div class="about">
+        <article class="card profile">
+          <div class="who">
+            <div class="avatar" aria-hidden="true" data-i18n="ab.ini">ГГ</div>
+            <div>
+              <h3 data-i18n="ab.name">Григорий Гамарин</h3>
+              <p>Middle+ QA Engineer · Web · API · Mobile</p>
+            </div>
+          </div>
+          <div class="facts">
+            <div><b data-i18n="ab.f1">5+ лет</b><span data-i18n="ab.f1s">в тестировании</span></div>
+            <div><b>3</b><span data-i18n="ab.f2s">продуктовые команды</span></div>
+            <div><b>Java</b><span>JUnit · Selenide</span></div>
+          </div>
+          <p class="summary" data-i18n="ab.sum">Тестирую веб, мобильные приложения и бэкенд в продуктовых командах. Работал с высоконагруженными системами, сервисами доставки, маркетплейсами и внутренними бизнес-приложениями. Проверяю API и данные в PostgreSQL, пишу UI-автотесты и сопровождаю релизы. Развиваюсь в сторону автоматизации и качества бэкенда.</p>
+          <div class="chips">
+            <span>PostgreSQL</span><span>Kafka</span><span>RabbitMQ</span><span>Elasticsearch</span><span>Postman</span><span>Charles</span><span>DevTools</span><span>GitLab</span><span>Jira</span><span>Confluence</span><span>TestRail</span><span>Android · iOS</span>
+          </div>
+        </article>
+
+        <ol class="card jobs" aria-label="Опыт работы" data-i18n-aria="a.jobs">
+          <li class="job" style="--c:var(--mint)"><div>
+            <h4 data-i18n="j1.h">Билайн · Lead Software Engineer</h4>
+            <span class="when" data-i18n="j1.w">июль 2024 — сейчас</span>
+            <p data-i18n="j1.p">Тестирование высоконагруженных веб-приложений: фронтенд, бэкенд, интеграции через Kafka. Регресс и приёмка релизов, UI-автотесты на Java + Selenide, внедрение AI в процессы тестирования.</p>
+          </div></li>
+          <li class="job" style="--c:var(--sky)"><div>
+            <h4 data-i18n="j2.h">X5 Digital, Впрок · QA Engineer</h4>
+            <span class="when" data-i18n="j2.w">апрель 2021 — март 2024</span>
+            <p data-i18n="j2.p">Доставка, маршрутизация, маркетплейс и WMS. Мобильное приложение «Перекрёсток Впрок» и курьерские приложения на Android и iOS, релизы через TestFlight и Google Play. Предложил сканировать QR-коды маркированных товаров вместо штрихкода и помог это внедрить.</p>
+          </div></li>
+          <li class="job" style="--c:var(--sun)"><div>
+            <h4 data-i18n="j3.h">Комус · QA Engineer</h4>
+            <span class="when" data-i18n="j3.w">август 2020 — апрель 2021</span>
+            <p data-i18n="j3.p">CRM и ERP-системы: анализ требований, тест-кейсы в TestRail, карты приложений и описание интеграционных потоков данных.</p>
+          </div></li>
+          <li class="job pre"><div>
+            <h4 data-i18n="j4.h">До QA · электромонтажник</h4>
+            <span class="when">2014 — 2020</span>
+            <p data-i18n="j4.p">Монтаж и обслуживание электрооборудования, проекты энергоснабжения. Из этой работы перешла привычка искать, где цепь рвётся.</p>
+          </div></li>
+        </ol>
+      </div>
+
+      <div class="card contacts">
+        <div>
+          <h3 data-i18n="c.h">Напишите мне</h3>
+          <p data-i18n="c.p">Отвечу на вопросы про старт в QA и автотесты.</p>
+        </div>
+        <div class="c-list" id="contacts" aria-live="polite">
+          <!-- Контакты не лежат в HTML открытым текстом: они собираются скриптом после нажатия «Показать» -->
+          <div class="c-item" data-kind="tg">
+            <div class="txt"><span class="lab">Telegram</span><span class="val">@••••••••</span></div>
+            <button type="button" class="c-btn" data-reveal data-i18n="c.show">Показать</button>
+          </div>
+          <div class="c-item" data-kind="mail">
+            <div class="txt"><span class="lab" data-i18n="c.mail">Почта</span><span class="val">•••••@•••••</span></div>
+            <button type="button" class="c-btn" data-reveal data-i18n="c.show">Показать</button>
+          </div>
+          <div class="c-item" data-kind="li">
+            <div class="txt"><span class="lab">LinkedIn</span><span class="val">••••••••</span></div>
+            <button type="button" class="c-btn" data-reveal data-i18n="c.show">Показать</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span data-i18n="f.l">QA/старт · Григорий Гамарин · <a href="#about">контакты</a></span>
+    <span class="mono" data-i18n="f.r">build 1.1.0 · 0 known bugs (пока)</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  /* ---------- i18n ---------- */
+  var EN = {
+    'logo':'QA/start',
+    'nav.what':'What is QA','nav.game':'Find the bug','nav.road':'Roadmap','nav.report':'Bug report','nav.gloss':'Glossary','nav.about':'About me',
+    'hero.eyebrow':'Starting a career in software testing',
+    'hero.h1':'Welcome to <span class="qa">QA</span>',
+    'hero.lead':'This is where you learn to break software so people enjoy using it. Start with a short game, then follow the roadmap from theory to test automation.',
+    'hero.cta1':'Find your first bug','hero.cta2':'See the roadmap',
+    't.title':'Title','t.steps':'Steps',
+    'tk.title':'A newcomer doesn’t know where to start in QA','tk.steps':'Open 40 course tabs, close them all',
+    'tk.exp':'Expected','tk.expv':'A clear plan for the first weeks','tk.fix':'Fix','tk.fixv':'This website',
+    'what.eyebrow':'Basics','what.h2':'QA, QC and testing are different things',
+    'what.p':'People mix them up even in interviews. In short: testing finds defects, quality control checks the product, and quality assurance builds a process where fewer defects appear.',
+    'what.h1':'Testing','what.p1':'We run the product and compare actual behavior with expected. We write checklists, test cases and bug reports.',
+    'what.h2b':'Quality control','what.p2':'We decide whether a release is ready: collect test results, metrics and open defects, then give a go or a stop.',
+    'what.h3':'Quality assurance','what.p3':'We work on the process: requirement reviews, team agreements, automated tests in CI. The goal is to keep bugs from appearing at all.',
+    'game.eyebrow':'Two-minute practice','game.h2':'Find the bugs in a sign-up form',
+    'game.p':'The form hides 6 defects: typos, logic and security. Click anything that looks suspicious. Misses count too, just like on a real project.',
+    'm.h':'Create an account','m.pass':'Pasword <span class="req">*</span>','m.passhint':'At least 8 characters',
+    'm.age':'Age','m.birth':'Date of birth','m.date':'02/31/2001','m.phone':'Phone <span class="req">*</span>','m.opt':'Optional field',
+    'm.terms':'<i></i> I accept the terms of use','m.submit':'Sing up',
+    's.found':'Defects found','s.miss':'Misses:','s.reset':'Start over',
+    'road.eyebrow':'Roadmap','road.h2':'Six steps from beginner to automation engineer',
+    'road.p':'Order matters: without theory and test design, automation just automates pointless checks. Click any tool or technique to see what it is.',
+    'r1.h':'Testing theory','r1.p':'Software and defect life cycles, testing types and levels, the 7 testing principles.',
+    'r2.h':'Test design','r2.p':'How to pick the fewest checks that find the most bugs.',
+    'r3.h':'Documentation','r3.p':'Writing so a developer can reproduce the bug on the first try.',
+    'r4.h':'Tools','r4.p':'Looking beneath the UI: requests, responses, data, logs.',
+    'r5.h':'Automation','r5.p':'One language and one framework. Start with API tests, they are more stable than UI tests.',
+    'r6.h':'Load testing and CI','r6.p':'Checking whether a service can handle thousands of users, and running tests on every commit.',
+    'rep.eyebrow':'The craft','rep.h2':'The test pyramid and anatomy of a bug report',
+    'rep.p':'On the left: how many tests of each kind teams usually write. On the right: how to write up one of the bugs from the game above.',
+    'pyr.h':'Test pyramid','pyr.1':'UI / E2E<small>few · slow · expensive</small>','pyr.2':'Integration / API<small>moderate</small>','pyr.3':'Unit tests<small>many · fast · cheap</small>',
+    'pyr.up':'↑ closer to the user','pyr.down':'↓ closer to the code',
+    'pyr.note':'The higher the level, the longer a test takes and the more often it fails for no reason. So most checks live at the bottom, and UI scenarios cover only key paths: sign-up, payment, search.',
+    'b.title':'<b>The Age field accepts negative values</b>','b.env':'Environment',
+    'b.steps':'<ol><li>Open /signup</li><li>Enter −5 in Age</li><li>Fill in the other fields with valid data</li><li>Click “Sign up”</li></ol>',
+    'b.exp':'Expected','b.expv':'Validation error “Age must be between 14 and 120”','b.act':'Actual','b.actv':'Account created, profile shows age −5',
+    'b.sev':'<span class="chip">Major</span> — corrupts data but doesn’t block work',
+    'b.pri':'<span class="chip coral">High</span> — the form is in production and bad data is piling up',
+    'b.att':'Attachments','b.attv':'Screenshot, HAR file of the POST /api/users request',
+    'gl.eyebrow':'Glossary','gl.h2':'Words you’ll hear in your first week','gl.p':'Click a card to see the definition.',
+    'gl.1':'<summary>Smoke test</summary><p>A quick check that the build is alive at all: it opens, you can log in, the main feature works. If the smoke test fails, testing stops there.</p>',
+    'gl.2':'<summary>Regression</summary><p>Re-checking existing features after changes. It answers the question “did we break anything?”.</p>',
+    'gl.3':'<summary>Retest</summary><p>Checking one specific fixed bug using the steps from its bug report.</p>',
+    'gl.4':'<summary>Severity</summary><p>How badly a bug affects the system: Blocker, Critical, Major, Minor, Trivial. Set by the tester.</p>',
+    'gl.5':'<summary>Priority</summary><p>How urgently it needs fixing. Usually decided by a manager or team lead based on business needs.</p>',
+    'gl.6':'<summary>Boundary values</summary><p>Testing at the edges of a range. For an age range of 14–120 we check 13, 14, 120 and 121.</p>',
+    'gl.7':'<summary>Flaky test</summary><p>An automated test that passes and fails with no code changes. Waits and test data are the usual suspects.</p>',
+    'gl.8':'<summary>Test environment</summary><p>A separate stand (dev, stage) with a copy of the app where you can break things without hurting users.</p>',
+    'hw.eyebrow':'Homework','hw.h2':'Your first-week plan','hw.p':'Tick items off as you go. Progress is saved in this browser.',
+    'hw.1':'Read about the 7 testing principles','hw.2':'Write a checklist for any website’s login form','hw.3':'Open DevTools and find the Network tab',
+    'hw.4':'Write a bug report for a real defect you found','hw.5':'Send your first GET request in Postman',
+    'ab.eyebrow':'About the author','ab.h2':'About me',
+    'ab.p':'I came to QA from a different profession myself, so I know how hard it is to figure out where to start. I built this page for people taking their first steps.',
+    'ab.ini':'GG','ab.name':'Grigoriy Gamarin','ab.f1':'5+ years','ab.f1s':'in testing','ab.f2s':'product teams',
+    'ab.sum':'I test web, mobile apps and backends in product teams. I’ve worked on high-load systems, delivery services, marketplaces and internal business apps. I verify APIs and data in PostgreSQL, write UI autotests and support releases. Now growing toward test automation and backend quality.',
+    'j1.h':'Beeline · Lead Software Engineer','j1.w':'Jul 2024 — present',
+    'j1.p':'Testing high-load web applications: frontend, backend, integrations via Kafka. Regression and release acceptance, UI autotests in Java + Selenide, bringing AI into testing processes.',
+    'j2.h':'X5 Digital, Vprok · QA Engineer','j2.w':'Apr 2021 — Mar 2024',
+    'j2.p':'Delivery, routing, marketplace and WMS. The Perekrestok Vprok mobile app and courier apps on Android and iOS, releases via TestFlight and Google Play. Proposed scanning QR codes on marked products instead of barcodes and helped roll it out.',
+    'j3.h':'Komus · QA Engineer','j3.w':'Aug 2020 — Apr 2021',
+    'j3.p':'CRM and ERP systems: requirements analysis, test cases in TestRail, application maps and descriptions of integration data flows.',
+    'j4.h':'Before QA · electrician','j4.p':'Installing and maintaining electrical equipment, power supply projects. That job taught me the habit of looking for where the circuit breaks.',
+    'c.h':'Get in touch','c.p':'Happy to answer questions about starting in QA and test automation.','c.show':'Show','c.mail':'Email',
+    'f.l':'QA/start · Grigoriy Gamarin · <a href="#about">contacts</a>','f.r':'build 1.1.0 · 0 known bugs (so far)'
+  };
+  var EN_ARIA = { 'a.home':'Home','a.nav':'Sections','a.ticket':'Sample ticket','a.nested':'How the terms nest','a.jobs':'Work experience' };
+  var STR = {
+    ru:{ notFound:'Ещё не найден', win0:'Все 6 дефектов найдены без единого промаха. Похоже, у вас талант.',
+         win:'Все 6 дефектов найдены! Промахов: {n}. Теперь попробуйте оформить один из них по шаблону ниже.',
+         prog:'Выполнено: {d} из {t}', progDone:' — первая неделя закрыта!', close:'Закрыть описание',
+         open:'Открыть', profile:'Профиль', copy:'Копировать', copied:'Скопировано', selected:'Выделено, Ctrl+C',
+         title:'Добро пожаловать в QA',
+         desc:'Лендинг для начинающих тестировщиков: игра «Найди баг», роадмап от теории до автотестов, пирамида тестов, пример баг-репорта и словарь QA.' },
+    en:{ notFound:'Not found yet', win0:'All 6 defects found without a single miss. Looks like you have a talent for this.',
+         win:'All 6 defects found! Misses: {n}. Now try writing up one of them using the template below.',
+         prog:'Done: {d} of {t}', progDone:' — first week complete!', close:'Close description',
+         open:'Open', profile:'Profile', copy:'Copy', copied:'Copied', selected:'Selected, press Ctrl+C',
+         title:'Welcome to QA',
+         desc:'A landing page for new software testers: a “Find the bug” game, a roadmap from theory to test automation, the test pyramid, a sample bug report and a QA glossary.' }
+  };
+  var LANG = 'ru', hooks = [];
+  function T(k, vars){ var s = STR[LANG][k]; for (var v in vars) s = s.replace('{' + v + '}', vars[v]); return s; }
+
+  function applyLang(l){
+    LANG = l;
+    document.documentElement.lang = l;
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var k = el.getAttribute('data-i18n');
+      if (el._ru === undefined) el._ru = el.innerHTML;
+      el.innerHTML = l === 'en' && EN[k] !== undefined ? EN[k] : el._ru;
+    });
+    document.querySelectorAll('[data-i18n-aria]').forEach(function(el){
+      var k = el.getAttribute('data-i18n-aria');
+      if (el._ruAria === undefined) el._ruAria = el.getAttribute('aria-label');
+      el.setAttribute('aria-label', l === 'en' ? EN_ARIA[k] : el._ruAria);
+    });
+    document.title = T('title');
+    var md = document.querySelector('meta[name="description"]'); if (md) md.setAttribute('content', T('desc'));
+    document.querySelectorAll('.lang button').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-lang') === l ? 'true' : 'false'); });
+    hooks.forEach(function(h){ h(); });
+  }
+  document.querySelector('.lang').addEventListener('click', function(e){
+    var b = e.target.closest('[data-lang]'); if (!b) return;
+    applyLang(b.getAttribute('data-lang'));
+    try { localStorage.setItem('qa-lang', LANG); } catch(err){}
+  });
+
+  /* ---------- Игра «Найди баг» ---------- */
+  var BUGS = {
+    ru:{ 1:["Опечатка в подписи","«Пороль» вместо «Пароль»."],
+         2:["Пароль виден открытым текстом","Поле должно маскировать ввод (type=password)."],
+         3:["Отрицательный возраст","Нет валидации диапазона, принимается −5."],
+         4:["Несуществующая дата","31 февраля принято без ошибки."],
+         5:["Противоречие в требованиях","Телефон отмечен звёздочкой, а подсказка говорит «необязательное»."],
+         6:["Опечатка в кнопке","«Зарегестрироваться» вместо «Зарегистрироваться»."] },
+    en:{ 1:["Typo in a label","“Pasword” instead of “Password”."],
+         2:["Password shown in plain text","The field must mask input (type=password)."],
+         3:["Negative age","No range validation, −5 is accepted."],
+         4:["Date that doesn’t exist","February 31 is accepted without an error."],
+         5:["Contradicting requirements","Phone is marked with an asterisk, but the hint says it’s optional."],
+         6:["Typo on the button","“Sing up” instead of “Sign up”."] }
+  };
+  var total = 6, found = {}, n = 0, miss = 0;
+  var mock = document.getElementById('mock'), list = document.getElementById('list');
+  var cnt = document.getElementById('cnt'), bar = document.getElementById('bar');
+  var missEl = document.getElementById('miss'), win = document.getElementById('win');
+
+  function render(){
+    list.innerHTML = '';
+    var order = [];
+    for (var i = 1; i <= total; i++) order.push(i);
+    order.sort(function(a, b){ return (found[a] || 99) - (found[b] || 99); });
+    order.forEach(function(i){
+      var li = document.createElement('li');
+      if (found[i]){
+        li.className = 'ok';
+        li.innerHTML = '<b>' + found[i] + '</b><span><strong>' + BUGS[LANG][i][0] + '</strong>' + BUGS[LANG][i][1] + '</span>';
+      } else {
+        li.innerHTML = '<b>?</b><span>' + T('notFound') + '</span>';
+      }
+      list.appendChild(li);
+    });
+    cnt.textContent = n;
+    bar.style.width = (n / total * 100) + '%';
+    missEl.textContent = miss;
+    if (n === total){
+      win.hidden = false;
+      win.textContent = miss === 0 ? T('win0') : T('win', {n: miss});
+    } else {
+      win.hidden = true;
+    }
+  }
+  hooks.push(render);
+
+  mock.addEventListener('click', function(e){
+    var el = e.target.closest('.mk');
+    if (!el) return;
+    var id = el.getAttribute('data-bug');
+    if (id){
+      if (!found[id]){
+        n++; found[id] = n;
+        el.classList.add('found');
+        el.setAttribute('data-n', n);
+        render();
+      }
+    } else {
+      miss++;
+      el.classList.remove('miss'); void el.offsetWidth; el.classList.add('miss');
+      render();
+    }
+  });
+
+  document.getElementById('reset').addEventListener('click', function(){
+    found = {}; n = 0; miss = 0;
+    mock.querySelectorAll('.found').forEach(function(el){ el.classList.remove('found'); el.removeAttribute('data-n'); });
+    render();
+  });
+
+  /* ---------- Чек-лист (только в браузере посетителя) ---------- */
+  var KEY = 'qa-start-tasks';
+  var boxes = document.querySelectorAll('#tasks input'), prog = document.getElementById('prog');
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch(e){ saved = {}; }
+  function upd(save){
+    var done = 0, state = {};
+    boxes.forEach(function(b){ if (b.checked){ done++; state[b.id] = 1; } });
+    prog.textContent = T('prog', {d: done, t: boxes.length}) + (done === boxes.length ? T('progDone') : '');
+    if (save) { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} }
+  }
+  boxes.forEach(function(b){ if (saved[b.id]) b.checked = true; b.addEventListener('change', function(){ upd(true); }); });
+  hooks.push(function(){ upd(false); });
+
+  /* ---------- Роадмап: теги раскрывают описание ---------- */
+  var TOOLS = {
+    'SDLC':['Software Development Life Cycle','Жизненный цикл разработки ПО: требования → проектирование → разработка → тестирование → релиз → поддержка. Знать стоит модели «водопад», V-модель и Agile (Scrum, Kanban).'],
+    'STLC':['Software Testing Life Cycle','Цикл тестирования: анализ требований, планирование, тест-дизайн, подготовка окружения, выполнение тестов и закрытие с отчётом. Тестировщик подключается уже на этапе требований.'],
+    'ISTQB FL':['ISTQB Foundation Level','Базовая международная сертификация тестировщиков. Силлабус бесплатный и хорошо структурирует теорию, даже если сдавать экзамен вы не планируете.'],
+    'Классы эквивалентности':['Equivalence Partitioning','Делим входные данные на группы, в которых система ведёт себя одинаково, и берём по одному значению из каждой. Для возраста 14–120 это три класса: меньше 14, от 14 до 120, больше 120.'],
+    'Граничные значения':['Boundary Value Analysis','Ошибки чаще всего живут на краях диапазона: разработчик пишет < вместо <=. Для возраста 14–120 проверяем 13, 14, 120 и 121.'],
+    'Pairwise':['Попарное тестирование','Вместо всех комбинаций параметров покрываем каждую пару значений хотя бы один раз. 3 браузера × 3 ОС × 2 языка = 18 комбинаций, а для всех пар хватит 9 тестов. Инструменты: PICT, allpairs.'],
+    'Таблицы решений':['Decision Table','Таблица условий и действий для сложной логики. Например, скидка зависит от статуса клиента и суммы заказа: каждая комбинация условий становится отдельным тестом.'],
+    'Чек-лист':['Checklist','Список того, что нужно проверить, без подробных шагов. Быстро пишется и легко обновляется, подходит для смоука и команд, где все знают продукт.'],
+    'Тест-кейс':['Test Case','Подробная проверка: предусловия, шаги, тестовые данные и ожидаемый результат. Нужен, когда важна повторяемость или проверку выполняет другой человек. Хранят в TestRail, Zephyr, Qase.'],
+    'Баг-репорт':['Bug Report','Описание дефекта: заголовок, окружение, шаги, ожидаемый и фактический результат, severity и priority, вложения. Хороший баг-репорт воспроизводится с первого раза. Пример есть ниже на странице.'],
+    'Jira':['Трекер задач','Самый распространённый трекер задач и багов. Научитесь заводить баги, вести их по статусам и искать через JQL, например: project = SHOP AND status = Open.'],
+    'DevTools':['Инструменты разработчика (F12)','Network показывает запросы и коды ответов, Console — ошибки JavaScript, Application — cookies и localStorage. Там же можно замедлить сеть и эмулировать телефон.'],
+    'Postman':['Клиент для API','Отправляете запросы GET, POST, PUT, DELETE и проверяете статус-коды и JSON-ответы. Запросы собираются в коллекции, а простые проверки пишутся на JavaScript.'],
+    'SQL':['Язык запросов к БД','Тестировщику хватит SELECT, WHERE, JOIN и GROUP BY, чтобы проверить, что данные действительно сохранились, и подготовить тестовые данные. Потренироваться можно на sql-ex или SQLZoo.'],
+    'Git':['Система контроля версий','Нужен, чтобы забирать код проекта, переключаться на ветки с фичами и хранить свои автотесты. Минимум: clone, pull, checkout, add, commit, push.'],
+    'Charles':['HTTP-прокси','Перехватывает трафик с компьютера и телефона, позволяет подменять ответы сервера и замедлять сеть. Особенно полезен для мобильных приложений. Альтернативы: Fiddler, mitmproxy.'],
+    'Python · pytest':['Язык + фреймворк','Python — самый популярный первый язык для автотестов: простой синтаксис. pytest даёт обычные assert, фикстуры для подготовки данных и параметризацию. Для API в связке с requests или httpx.'],
+    'Java · JUnit':['Язык + фреймворк','Java часто встречается в крупных компаниях и банках. JUnit 5 — стандартный фреймворк тестов, обычно вместе с Maven или Gradle, REST Assured для API и Allure для отчётов.'],
+    'Playwright':['UI-автотесты','Современный фреймворк от Microsoft: Chromium, Firefox и WebKit, автоожидание элементов, запись трейсов и видео. Есть для JS/TS, Python, Java и .NET. Тесты получаются стабильнее, чем на Selenium.'],
+    'Selenium':['UI-автотесты','Классический инструмент управления браузером через WebDriver. Всё ещё живёт во многих проектах, и про него часто спрашивают на собеседованиях: локаторы, явные ожидания, Page Object.'],
+    'k6':['Нагрузочное тестирование','Инструмент от Grafana Labs. Сценарии пишутся на JavaScript, пороги (thresholds) задают критерии успеха, например p95 < 500 мс. Легко запускается в CI.'],
+    'JMeter':['Нагрузочное тестирование','Ветеран от Apache с графическим интерфейсом. Умеет HTTP, JDBC, JMS и многое другое, есть множество плагинов. Сценарии собираются из блоков, а большие прогоны запускают без GUI.'],
+    'Locust':['Нагрузочное тестирование','Сценарии на Python: поведение пользователя описывается классом, а затем запускаются тысячи таких пользователей. Есть веб-интерфейс с графиками и распределённый запуск.'],
+    'GitLab CI':['Непрерывная интеграция','Этапы описываются в файле .gitlab-ci.yml, и тесты запускаются автоматически на каждый коммит или merge request. Аналоги: GitHub Actions, Jenkins, TeamCity.'],
+    'Grafana':['Дашборды метрик','Графики времени ответа, RPS, ошибок, CPU и памяти. Во время нагрузки смотрят сюда, чтобы найти узкое место. Данные обычно приходят из Prometheus или InfluxDB.']
+  };
+  /* EN: [название тега, подзаголовок, описание] */
+  var TOOLS_EN = {
+    'SDLC':['SDLC','Software Development Life Cycle','The software development life cycle: requirements → design → development → testing → release → maintenance. Worth knowing: Waterfall, the V-model and Agile (Scrum, Kanban).'],
+    'STLC':['STLC','Software Testing Life Cycle','The testing cycle: requirements analysis, planning, test design, environment setup, test execution and closure with a report. A tester joins as early as the requirements stage.'],
+    'ISTQB FL':['ISTQB FL','ISTQB Foundation Level','The entry-level international certification for testers. The syllabus is free and gives theory a solid structure, even if you never take the exam.'],
+    'Классы эквивалентности':['Equivalence classes','Equivalence Partitioning','Split inputs into groups where the system behaves the same way and take one value from each. For an age range of 14–120 there are three classes: below 14, 14 to 120, above 120.'],
+    'Граничные значения':['Boundary values','Boundary Value Analysis','Bugs love the edges of a range: a developer writes < instead of <=. For an age range of 14–120 we check 13, 14, 120 and 121.'],
+    'Pairwise':['Pairwise','Pairwise testing','Instead of every combination of parameters, cover each pair of values at least once. 3 browsers × 3 OSes × 2 languages = 18 combinations, but 9 tests cover all pairs. Tools: PICT, allpairs.'],
+    'Таблицы решений':['Decision tables','Decision Table','A table of conditions and actions for complex logic. For example, a discount depends on customer status and order total: each combination of conditions becomes a separate test.'],
+    'Чек-лист':['Checklist','Checklist','A list of what to check, without detailed steps. Quick to write and easy to update, good for smoke testing and teams that know the product well.'],
+    'Тест-кейс':['Test case','Test Case','A detailed check: preconditions, steps, test data and expected result. Needed when repeatability matters or someone else runs the check. Stored in TestRail, Zephyr, Qase.'],
+    'Баг-репорт':['Bug report','Bug Report','A defect description: title, environment, steps, expected and actual result, severity and priority, attachments. A good bug report reproduces on the first try. There is an example further down the page.'],
+    'Jira':['Jira','Issue tracker','The most widely used tracker for tasks and bugs. Learn to file bugs, move them through statuses and search with JQL, for example: project = SHOP AND status = Open.'],
+    'DevTools':['DevTools','Browser developer tools (F12)','Network shows requests and response codes, Console shows JavaScript errors, Application shows cookies and localStorage. You can also throttle the network and emulate a phone there.'],
+    'Postman':['Postman','API client','Send GET, POST, PUT and DELETE requests and check status codes and JSON responses. Requests are grouped into collections, and simple checks are written in JavaScript.'],
+    'SQL':['SQL','Database query language','SELECT, WHERE, JOIN and GROUP BY are enough for a tester to confirm data was really saved and to prepare test data. Practice on sql-ex or SQLZoo.'],
+    'Git':['Git','Version control system','You need it to get the project code, switch to feature branches and store your own automated tests. The minimum: clone, pull, checkout, add, commit, push.'],
+    'Charles':['Charles','HTTP proxy','Intercepts traffic from a computer or phone, lets you replace server responses and slow down the network. Especially useful for mobile apps. Alternatives: Fiddler, mitmproxy.'],
+    'Python · pytest':['Python · pytest','Language + framework','Python is the most popular first language for test automation thanks to its simple syntax. pytest gives you plain assert, fixtures for test data and parametrization. For APIs, pair it with requests or httpx.'],
+    'Java · JUnit':['Java · JUnit','Language + framework','Java is common in large companies and banks. JUnit 5 is the standard test framework, usually alongside Maven or Gradle, REST Assured for APIs and Allure for reports.'],
+    'Playwright':['Playwright','UI test automation','A modern framework from Microsoft: Chromium, Firefox and WebKit, auto-waiting for elements, traces and video recording. Available for JS/TS, Python, Java and .NET. Tests tend to be more stable than with Selenium.'],
+    'Selenium':['Selenium','UI test automation','The classic tool for driving a browser through WebDriver. Still used in many projects and a frequent interview topic: locators, explicit waits, Page Object.'],
+    'k6':['k6','Load testing','A tool from Grafana Labs. Scenarios are written in JavaScript, and thresholds define success criteria, for example p95 < 500 ms. Easy to run in CI.'],
+    'JMeter':['JMeter','Load testing','A veteran from Apache with a graphical interface. Supports HTTP, JDBC, JMS and much more, with lots of plugins. Scenarios are built from blocks, and large runs are started without the GUI.'],
+    'Locust':['Locust','Load testing','Scenarios in Python: describe user behavior in a class, then launch thousands of those users. Comes with a web UI with charts and distributed runs.'],
+    'GitLab CI':['GitLab CI','Continuous integration','Stages are described in a .gitlab-ci.yml file, and tests run automatically on every commit or merge request. Alternatives: GitHub Actions, Jenkins, TeamCity.'],
+    'Grafana':['Grafana','Metrics dashboards','Charts for response time, RPS, errors, CPU and memory. During a load test this is where you look for the bottleneck. Data usually comes from Prometheus or InfluxDB.']
+  };
+  function tool(k){ return LANG === 'en' ? TOOLS_EN[k] : [k, TOOLS[k][0], TOOLS[k][1]]; }
+
+  document.querySelectorAll('.road > li').forEach(function(li, idx){
+    var chips = li.querySelector('.chips');
+    if (!chips) return;
+    var panel = document.createElement('div');
+    panel.className = 'tool-info';
+    panel.id = 'tool-info-' + idx;
+    panel.innerHTML = '<div class="clip"><div class="in" role="region" aria-live="polite"><div class="in-head"><b></b><button type="button" class="x">×</button></div><span class="eyebrow sub"></span><p></p></div></div>';
+    chips.after(panel);
+    var title = panel.querySelector('b'), sub = panel.querySelector('.sub'), text = panel.querySelector('p');
+    var closeBtn = panel.querySelector('.x');
+    closeBtn.tabIndex = -1;
+
+    chips.querySelectorAll('span').forEach(function(s){
+      var name = s.textContent.trim();
+      if (!TOOLS[name]) return;
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'tool'; b.setAttribute('data-k', name); b.textContent = name;
+      b.setAttribute('aria-expanded', 'false');
+      b.setAttribute('aria-controls', panel.id);
+      s.replaceWith(b);
+    });
+
+    function fill(b){ var d = tool(b.getAttribute('data-k')); title.textContent = d[0]; sub.textContent = d[1]; text.textContent = d[2]; }
+    function close(){
+      panel.classList.remove('open');
+      closeBtn.tabIndex = -1;
+      chips.querySelectorAll('.tool').forEach(function(t){ t.setAttribute('aria-expanded','false'); });
+    }
+    chips.addEventListener('click', function(e){
+      var b = e.target.closest('.tool');
+      if (!b) return;
+      if (b.getAttribute('aria-expanded') === 'true'){ close(); return; }
+      chips.querySelectorAll('.tool').forEach(function(t){ t.setAttribute('aria-expanded', t === b ? 'true' : 'false'); });
+      fill(b);
+      panel.classList.add('open');
+      closeBtn.tabIndex = 0;
+    });
+    closeBtn.addEventListener('click', function(){
+      var active = chips.querySelector('.tool[aria-expanded="true"]');
+      close();
+      if (active) active.focus();
+    });
+    li.addEventListener('keydown', function(e){ if (e.key === 'Escape' && panel.classList.contains('open')) closeBtn.click(); });
+    hooks.push(function(){
+      chips.querySelectorAll('.tool').forEach(function(t){ t.textContent = tool(t.getAttribute('data-k'))[0]; });
+      closeBtn.setAttribute('aria-label', T('close'));
+      var active = chips.querySelector('.tool[aria-expanded="true"]');
+      if (active) fill(active);
+    });
+  });
+
+  /* ---------- Контакты: закодированы (base64 от перевёрнутой строки), раскрываются по клику ---------- */
+  var ENC = { tg:'YWtoc2lyZ2tjYWxi', mail:'bW9jLmxpYW1nQDE5MTAxMW1hZw==', li:'MGIzYTA1OTAxLW5pcmFtYWcteWlyb2dpcmc=' };
+  function dec(s){ return atob(s).split('').reverse().join(''); }
+  var contacts = document.getElementById('contacts');
+
+  function linkBtn(href, role){
+    var a = document.createElement('a');
+    a.className = 'c-btn'; a.href = href; a.target = '_blank'; a.rel = 'noopener nofollow';
+    a.setAttribute('data-role', role); a.textContent = T(role);
+    return a;
+  }
+  function reveal(){
+    if (contacts.dataset.open) return;
+    contacts.dataset.open = '1';
+    contacts.querySelectorAll('.c-item').forEach(function(item){
+      var kind = item.getAttribute('data-kind'), v = dec(ENC[kind]);
+      var val = item.querySelector('.val'), btn = item.querySelector('[data-reveal]'), next;
+      if (kind === 'tg'){ val.textContent = '@' + v; next = linkBtn(['https://t', 'me/'].join('.') + v, 'open'); }
+      else if (kind === 'li'){ val.textContent = v.replace(/-[0-9a-f]+$/, ''); next = linkBtn('https://www.linkedin.com/in/' + v + '/', 'profile'); }
+      else {
+        val.textContent = v;
+        next = document.createElement('button'); next.type = 'button'; next.className = 'c-btn';
+        next.setAttribute('data-copy', ''); next.setAttribute('data-role', 'copy'); next.textContent = T('copy');
+      }
+      btn.replaceWith(next);
+    });
+  }
+  function copy(btn){
+    var text = btn.parentElement.querySelector('.val').textContent;
+    clearTimeout(btn._t);
+    function flash(k){ btn.textContent = T(k); btn._t = setTimeout(function(){ btn.textContent = T('copy'); }, 1800); }
+    function fallback(){
+      try { var r = document.createRange(); r.selectNodeContents(btn.parentElement.querySelector('.val')); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch(e){}
+      flash('selected');
+    }
+    try { navigator.clipboard.writeText(text).then(function(){ flash('copied'); }, fallback); } catch(e){ fallback(); }
+  }
+  contacts.addEventListener('click', function(e){
+    if (e.target.closest('[data-reveal]')){ var k = e.target.closest('.c-item').getAttribute('data-kind'); reveal(); var f = contacts.querySelector('[data-kind="' + k + '"] .c-btn'); if (f) f.focus(); }
+    else if (e.target.closest('[data-copy]')) copy(e.target.closest('[data-copy]'));
+  });
+  hooks.push(function(){
+    contacts.querySelectorAll('[data-role]').forEach(function(b){ clearTimeout(b._t); b.textContent = T(b.getAttribute('data-role')); });
+  });
+
+  /* ---------- Стартовый язык: сохранённый выбор, иначе язык браузера ---------- */
+  var start = null;
+  try { start = localStorage.getItem('qa-lang'); } catch(e){}
+  if (start !== 'ru' && start !== 'en'){
+    var nav = (navigator.languages && navigator.languages[0]) || navigator.language || 'ru';
+    start = /^(ru|uk|be|kk)/i.test(nav) ? 'ru' : 'en';
+  }
+  applyLang(start);
+})();
+</script>
+</body>
+</html>
